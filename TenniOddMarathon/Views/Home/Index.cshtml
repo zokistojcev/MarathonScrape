@@ -1,0 +1,39 @@
+﻿@model  List<TenniOddMarathon.Models.TennisOdd>
+
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div> @Model</div>
+
+
+<table>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @item.ParOne
+            </td>
+            <td>
+                @item.ParTwo
+            </td>
+
+            @*@foreach (var item2 in item.Koefecienti)
+            {
+                <td>
+                    @item2.KoeficientFirst
+                </td>
+                <td>
+                    @item2.KoeficientSecond
+                </td>
+            }*@
+
+
+
+            <td>
+                @item.TurnirDataPocetok
+            </td>
+        </tr>
+    }
+</table>
