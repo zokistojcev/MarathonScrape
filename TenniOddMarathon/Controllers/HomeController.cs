@@ -21,7 +21,9 @@ namespace TenniOddMarathon.Controllers
 
         //aasda
 
-
+        /// <summary>
+        /// test
+        /// </summary>
 
 
         public HomeController()
