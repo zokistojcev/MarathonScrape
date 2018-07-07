@@ -1,7 +1,7 @@
 ﻿using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using System;
+using System.Data.Entity;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -11,6 +11,8 @@ using System.Web;
 using System.Web.Mvc;
 using TenniOddMarathon.Models;
 using TenniOddMarathon.ViewModels;
+using System;
+using System.Web.Services.Description;
 
 namespace TenniOddMarathon.Controllers
 {
@@ -19,12 +21,6 @@ namespace TenniOddMarathon.Controllers
 
         private TennisOddContext _context;
 
-        //aasda
-
-        /// <summary>
-        /// test
-        /// </summary>
-
 
         public HomeController()
         {
@@ -32,19 +28,12 @@ namespace TenniOddMarathon.Controllers
 
         }
 
-
-
         public async Task<ActionResult> Index()
         {
-
-
-            //var t = await BetMarathon();
-            var t = await Zoki();
+            var t = await Mains();
             Thread.Sleep(3000);
             return View(t);
         }
-
-
 
         //public ActionResult Index()
         //{
@@ -63,13 +52,128 @@ namespace TenniOddMarathon.Controllers
             ViewBag.Message = "Your contact page.";
 
             return View();
-            
+
+        }
+
+        public async Task<List<TennisOdd>> Mains()
+        {
+            // Da se zemat od internet  
+            var internetParovi = await BetMarathon();
+
+            // da se zemat od DB
+            var databaseParovi = _context.TennisOdd.Include(o => o.Koefecienti).ToList();
+
+            // ako e prazna listata
+            if (databaseParovi.Count() < 1)
+            {
+                var listaOdNoviParovi2 = new List<TennisOdd>();
+                foreach (var ni in internetParovi)
+                {
+                    var par = new TennisOdd
+                    {
+                        DateAndBeginingTime = ni.DateAndBeginingTime,
+                        TurnirDataPocetok = ni.TurnirDataPocetok,
+                        ParOne = ni.ParOne,
+                        ParTwo = ni.ParTwo,
+                        Koefecienti = new List<Koeficienti> { new Koeficienti { KoeficientFirst = ni.KoeficientFirst, KoeficientSecond = ni.KoeficientSecond } }
+                    };
+
+                    databaseParovi.Add(par);
+                }
+                _context.TennisOdd.AddRange(databaseParovi);
+                _context.SaveChanges();
+
+                return databaseParovi.ToList();
+            }
+
+            //da se prociste spisoko
+            var deleteParovi = databaseParovi.Where(y =>
+                !internetParovi.Any(z => z.ParOne == y.ParOne && z.ParTwo == y.ParTwo)).ToList();
+
+
+            if (deleteParovi.Count() > 1)
+            {
+                _context.TennisOdd.RemoveRange(deleteParovi);
+                _context.SaveChanges();
+            }
+
+
+            //parovi so ostanuvat u db i uslovno im se dodavat koeficeni vo listata
+            var paroviSoOstanuvatVoDb = databaseParovi.Where(y =>
+                internetParovi.Any(z => z.ParOne == y.ParOne && z.ParTwo == y.ParTwo)).ToList();
+
+            var postojatIGiImaNaInternet = internetParovi.Where(y =>
+                paroviSoOstanuvatVoDb.Any(z => z.ParOne == y.ParOne && z.ParTwo == y.ParTwo)).ToList();
+
+            //vie se novi so nagolo treba da se kladat
+            var noviInternet = internetParovi.Where(y =>
+                !paroviSoOstanuvatVoDb.Any(z => z.ParOne == y.ParOne && z.ParTwo == y.ParTwo)).ToList();
+           
+
+            // SO POSTOJAT DODAVANJE NA KOEF
+            foreach (var parSoOstanuve in paroviSoOstanuvatVoDb)
+            {
+                foreach (var pi in postojatIGiImaNaInternet)
+                {
+                    
+                    var koef = parSoOstanuve.Koefecienti.First();
+                    if (koef==null)
+                    {
+                        break;
+                    }
+                    if (parSoOstanuve.ParOne == pi.ParOne && parSoOstanuve.ParTwo == pi.ParTwo)
+                    {
+
+                       
+                            if (koef.KoeficientFirst != pi.KoeficientFirst || koef.KoeficientSecond != pi.KoeficientSecond)
+                            {
+                                Koeficienti k = new Koeficienti();
+
+                                k.KoeficientFirst = pi.KoeficientFirst;
+                                k.KoeficientSecond = pi.KoeficientSecond;
+                                k.TennisOddId = parSoOstanuve.Id;
+                                parSoOstanuve.Koefecienti.Add(k);
+  
+                            }
+                        }                                                            
+
+                }
+            }
+           
+
+            //DODAVANJE NA NOVI
+
+            if (noviInternet.Count() > 1)
+            {
+                var listaOdNoviParovi = new List<TennisOdd>();
+                foreach (var ni in noviInternet)
+                {
+                    var par = new TennisOdd
+                    {
+                        DateAndBeginingTime = ni.DateAndBeginingTime,
+                        TurnirDataPocetok = ni.TurnirDataPocetok,
+                        ParOne = ni.ParOne,
+                        ParTwo = ni.ParTwo,
+                        Koefecienti = new List<Koeficienti> { new Koeficienti { KoeficientFirst = ni.KoeficientFirst, KoeficientSecond = ni.KoeficientSecond } }
+                    };
+
+                    listaOdNoviParovi.Add(par);
+                    _context.TennisOdd.AddRange(listaOdNoviParovi);
+                }
+                _context.SaveChanges();
+            }
+
+            //var yy = _context.TennisOdd.ToList();
+            _context.SaveChanges();
+            var g = _context.TennisOdd.ToList();
+            return g;
         }
 
         public async Task<List<TennisOddViewModel>> BetMarathon()
         {
             IWebDriver driver = new ChromeDriver();
 
+            //var url = "https://www.marathonbet.com/en/betting/Basketball/?menu=6";
             var url = "https://www.marathonbet.com/en/betting/Tennis/?menu=2398";
             var httpClient = new HttpClient();
             var html = await httpClient.GetStringAsync(url);
@@ -96,19 +200,15 @@ namespace TenniOddMarathon.Controllers
                 {
                     break;
                 }
-
                 //string turnirDataPocetok = tdp;
-
-
-
 
                 var category_content = item.Descendants("tr").Where(node => node.GetAttributeValue("class", "").Equals(" event-header")).ToList();
 
                 foreach (var item2 in category_content)
                 {
                     TennisOddViewModel to = new TennisOddViewModel();
-                    
-                    
+
+
                     to.TurnirDataPocetok = tdp;
 
 
@@ -138,12 +238,12 @@ namespace TenniOddMarathon.Controllers
                             .Equals("price height-column-with-price    "))
                             .FirstOrDefault().InnerText.Trim('\n', ' ');
 
-                        
+
 
                         to.KoeficientFirst = koeficientFirst;
                         to.KoeficientSecond = koeficientSecond;
                         to.DateAndBeginingTime = DayAndHour;
-                        
+
 
                     }
                     else
@@ -168,11 +268,11 @@ namespace TenniOddMarathon.Controllers
                             .Where(node => node.GetAttributeValue("class", "")
                             .Equals("price height-column-with-price    "))
                             .FirstOrDefault().InnerText.Trim('\n', ' ');
-                       
+
                         to.KoeficientFirst = koeficientFirst;
                         to.KoeficientSecond = koeficientSecond;
                         to.DateAndBeginingTime = DayAndHour;
-                       
+
 
                     }
                     lto.Add(to);
@@ -182,74 +282,6 @@ namespace TenniOddMarathon.Controllers
             }
             return lto;
 
-        }
-
-        public async Task<List<TennisOdd>> Zoki()
-        {
-            var databaseParovi = _context.TennisOdd.ToList();
-            var noviParovi = await BetMarathon();
-
-            
-
-            foreach (var novPar in noviParovi)
-            {
-
-                //var databasaPar = databaseParovi.Where(x => x.ParOne == novPar.ParOne && x.ParTwo == novPar.ParTwo).FirstOrDefault();
-                //if (databasaPar==null)
-                //{
-                //    databaseParovi.Add(novPar);
-                //}
-                //else
-                //{
-                //    var k1 = databasaPar.Koefecienti.LastOrDefault().KoeficientFirst;
-                //    var k2 = databasaPar.Koefecienti.LastOrDefault().KoeficientSecond;
-                //    if (k1==novPar)
-                //    {
-
-                //    }
-                //}
-                bool isExisting = false;
-                foreach (var databasePar in databaseParovi)
-                {
-
-                    
-
-                    if (novPar.ParOne == databasePar.ParOne && novPar.ParTwo == databasePar.ParTwo)
-                    {
-                        var posledenKoeficient = databasePar.Koefecienti.LastOrDefault();
-                        var fKoeficient = novPar.KoeficientFirst;
-                        var sKoeficient = novPar.KoeficientSecond;
-                        isExisting = true;
-                       
-                        break;
-                    }
-                    
-
-
-                }
-
-                if (!isExisting)
-                {
-                    TennisOdd too = new TennisOdd();
-                    too.ParOne = novPar.ParOne;
-                    too.ParTwo = novPar.ParTwo;
-                    too.TurnirDataPocetok = novPar.TurnirDataPocetok;
-                    too.DateAndBeginingTime = novPar.DateAndBeginingTime;
-
-                    List<Koeficienti> lk = new List<Koeficienti>();
-                    too.Koefecienti = lk;
-                    Koeficienti k = new Koeficienti();
-                    k.KoeficientFirst = novPar.KoeficientFirst;
-                    k.KoeficientSecond = novPar.KoeficientSecond;
-                    too.Koefecienti.Add(k);
-
-                    databaseParovi.Add(too);
-                }
-                
-
-            }
-            _context.SaveChanges();
-            return databaseParovi;
         }
     }
 }
