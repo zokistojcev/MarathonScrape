@@ -11,5 +11,6 @@ namespace TenniOddMarathon.Models
         public int TennisOddId { get; set; }
         public string KoeficientFirst { get; set; }
         public string KoeficientSecond { get; set; }
+        public DateTime DateAndTime { get; set; }
     }
 }

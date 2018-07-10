@@ -14,5 +14,7 @@ namespace TenniOddMarathon.Models
         public string DateAndBeginingTime { get; set; }
         public string TurnirDataPocetok { get; set; }
 
+        
+
     }
 }

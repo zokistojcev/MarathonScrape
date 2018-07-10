@@ -152,6 +152,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\OddsController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -163,8 +164,14 @@
     <Compile Include="Migrations\201806182036585_second.Designer.cs">
       <DependentUpon>201806182036585_second.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201807091607528_dateTimeAtKoeficienti.cs" />
+    <Compile Include="Migrations\201807091607528_dateTimeAtKoeficienti.Designer.cs">
+      <DependentUpon>201807091607528_dateTimeAtKoeficienti.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\FootballOdd.cs" />
     <Compile Include="Models\Koeficienti.cs" />
+    <Compile Include="Models\KoeficientiFootball.cs" />
     <Compile Include="Models\TennisOdd.cs" />
     <Compile Include="Models\TennisOddContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -210,6 +217,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Odds\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
@@ -231,6 +239,19 @@
     <EmbeddedResource Include="Migrations\201806182036585_second.resx">
       <DependentUpon>201806182036585_second.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201807091607528_dateTimeAtKoeficienti.resx">
+      <DependentUpon>201807091607528_dateTimeAtKoeficienti.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OddMarathon.Dal\OddMarathon.Dal.csproj">
+      <Project>{1042546b-cccd-415e-9dde-1e2a0951cb4b}</Project>
+      <Name>OddMarathon.Dal</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OddMarathon.Services\OddMarathon.Services.csproj">
+      <Project>{622ca3b9-2a9d-4833-aba7-767c9b62a218}</Project>
+      <Name>OddMarathon.Services</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

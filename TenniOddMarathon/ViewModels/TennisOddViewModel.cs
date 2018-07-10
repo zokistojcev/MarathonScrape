@@ -12,6 +12,7 @@ namespace TenniOddMarathon.ViewModels
         public string ParTwo { get; set; }
         public string KoeficientFirst { get; set; }
         public string KoeficientSecond { get; set; }
+        public DateTime DateAndTime { get; set; }
         public string DateAndBeginingTime { get; set; }
         public string TurnirDataPocetok { get; set; }
 
