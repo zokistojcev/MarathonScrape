@@ -4,6 +4,7 @@ namespace OddMarathon.Dal.DataAccess
     using System.Data.Entity;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Linq;
+    using OddMarathon.Dal.DataAccess.DomainModels;
 
     public partial class OddMarathonContext : DbContext
     {
