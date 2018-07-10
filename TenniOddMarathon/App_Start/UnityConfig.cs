@@ -1,5 +1,4 @@
 using OddMarathon.Dal.Repositories.OddsRepository;
-using OddMarathon.Services.BusinessLogic;
 using OddMarathon.Services.BusinessLogic.Odds;
 using System;
 
