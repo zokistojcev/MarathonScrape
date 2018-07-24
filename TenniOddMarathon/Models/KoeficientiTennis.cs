@@ -5,10 +5,10 @@ using System.Web;
 
 namespace TenniOddMarathon.Models
 {
-    public class Koeficienti
+    public class KoeficientiTennis
     {
         public int Id { get; set; }
-        public int TennisOddId { get; set; }
+        public int BettingOddId { get; set; }
         public string KoeficientFirst { get; set; }
         public string KoeficientSecond { get; set; }
         public DateTime DateAndTime { get; set; }

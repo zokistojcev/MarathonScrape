@@ -5,14 +5,14 @@ namespace TenniOddMarathon.Migrations
     using System.Data.Entity.Migrations;
     using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<TenniOddMarathon.Models.TennisOddContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<TenniOddMarathon.Models.OddContext>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
         }
 
-        protected override void Seed(TenniOddMarathon.Models.TennisOddContext context)
+        protected override void Seed(TenniOddMarathon.Models.OddContext context)
         {
             //  This method will be called after migrating to the latest version.
 

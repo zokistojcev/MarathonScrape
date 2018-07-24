@@ -19,12 +19,12 @@ namespace TenniOddMarathon.Controllers
     public class HomeController : Controller
     {
 
-        private TennisOddContext _context;
+        private OddContext _context;
 
 
         public HomeController()
         {
-            _context = new TennisOddContext();
+            _context = new OddContext();
 
         }
 
@@ -55,32 +55,34 @@ namespace TenniOddMarathon.Controllers
 
         }
 
-        public async Task<List<TennisOdd>> Mains()
+        public async Task<List<BettingOdd>> Mains()
         {
             // Da se zemat od internet  
             var internetParovi = await BetMarathon();
+            var internetParovi2 = await BetMarathonFootball();
 
             // da se zemat od DB
-            var databaseParovi = _context.TennisOdd.Include(o => o.Koefecienti).ToList();
-
+            var databaseParovi = _context.BettingOdds.Include(o => o.KoefecientiTennis).ToList();
+            var er = DatabaseSport();
             // ako e prazna listata
             if (databaseParovi.Count() < 1)
             {
-                var listaOdNoviParovi2 = new List<TennisOdd>();
+                var listaOdNoviParovi2 = new List<BettingOdd>();
                 foreach (var ni in internetParovi)
                 {
-                    var par = new TennisOdd
+                    var par = new BettingOdd
                     {
                         DateAndBeginingTime = ni.DateAndBeginingTime,
                         TurnirDataPocetok = ni.TurnirDataPocetok,
                         ParOne = ni.ParOne,
                         ParTwo = ni.ParTwo,
-                        Koefecienti = new List<Koeficienti> { new Koeficienti { KoeficientFirst = ni.KoeficientFirst, KoeficientSecond = ni.KoeficientSecond, DateAndTime = ni.DateAndTime} }
+                        Sport = Sports.Tennis
+                        
                     };
-
+                    par.KoefecientiTennis = new List<KoeficientiTennis> { new KoeficientiTennis { KoeficientFirst = ni.KoeficientFirst, KoeficientSecond = ni.KoeficientSecond, DateAndTime = ni.DateAndTime } };
                     databaseParovi.Add(par);
                 }
-                _context.TennisOdd.AddRange(databaseParovi);
+                _context.BettingOdds.AddRange(databaseParovi);
                 _context.SaveChanges();
 
                 return databaseParovi.ToList();
@@ -93,7 +95,7 @@ namespace TenniOddMarathon.Controllers
 
             if (deleteParovi.Count() > 1)
             {
-                _context.TennisOdd.RemoveRange(deleteParovi);
+                _context.BettingOdds.RemoveRange(deleteParovi);
                 _context.SaveChanges();
             }
 
@@ -116,7 +118,7 @@ namespace TenniOddMarathon.Controllers
                 foreach (var pi in postojatIGiImaNaInternet)
                 {
                     
-                    var koef = parSoOstanuve.Koefecienti.First();
+                    var koef = parSoOstanuve.KoefecientiTennis.First();
                     if (koef==null)
                     {
                         break;
@@ -127,16 +129,17 @@ namespace TenniOddMarathon.Controllers
                        
                             if (koef.KoeficientFirst != pi.KoeficientFirst || koef.KoeficientSecond != pi.KoeficientSecond)
                             {
-                                Koeficienti k = new Koeficienti();
+                                KoeficientiTennis k = new KoeficientiTennis();
 
                                 k.KoeficientFirst = pi.KoeficientFirst;
                                 k.KoeficientSecond = pi.KoeficientSecond;
-                                k.TennisOddId = parSoOstanuve.Id;
+                                k.BettingOddId = parSoOstanuve.Id;
                                 k.DateAndTime = pi.DateAndTime;
-                                parSoOstanuve.Koefecienti.Add(k);
+                            
+                                parSoOstanuve.KoefecientiTennis.Add(k);
   
                             }
-                        }                                                            
+                    }                                                            
 
                 }
             }
@@ -146,27 +149,27 @@ namespace TenniOddMarathon.Controllers
 
             if (noviInternet.Count() > 1)
             {
-                var listaOdNoviParovi = new List<TennisOdd>();
+                var listaOdNoviParovi = new List<BettingOdd>();
                 foreach (var ni in noviInternet)
                 {
-                    var par = new TennisOdd
+                    var par = new BettingOdd
                     {
                         DateAndBeginingTime = ni.DateAndBeginingTime,
                         TurnirDataPocetok = ni.TurnirDataPocetok,
                         ParOne = ni.ParOne,
-                        ParTwo = ni.ParTwo,
-                        Koefecienti = new List<Koeficienti> { new Koeficienti { KoeficientFirst = ni.KoeficientFirst, KoeficientSecond = ni.KoeficientSecond, DateAndTime = ni.DateAndTime } }
+                        ParTwo = ni.ParTwo
+                        
                     };
-
+                    par.KoefecientiTennis = new List<KoeficientiTennis> { new KoeficientiTennis { KoeficientFirst = ni.KoeficientFirst, KoeficientSecond = ni.KoeficientSecond, DateAndTime = ni.DateAndTime } };
                     listaOdNoviParovi.Add(par);
-                    _context.TennisOdd.AddRange(listaOdNoviParovi);
+                    _context.BettingOdds.AddRange(listaOdNoviParovi);
                 }
                 _context.SaveChanges();
             }
 
             //var yy = _context.TennisOdd.ToList();
             _context.SaveChanges();
-            var g = _context.TennisOdd.ToList();
+            var g = _context.BettingOdds.ToList();
             return g;
         }
 
@@ -292,11 +295,12 @@ namespace TenniOddMarathon.Controllers
         }
 
 
-        public async Task<List<TennisOddViewModel>> BetMarathonFootball()
+        public async Task<List<FootballOddViewModel>> BetMarathonFootball()
         {
             //IWebDriver driver = new ChromeDriver();
 
-            var url = "https://www.marathonbet.com/en/betting/Basketball/?menu=6";     
+            var url = "https://www.marathonbet.com/en/popular/Football/?menu=11";   
+            
             var httpClient = new HttpClient();
             var html = await httpClient.GetStringAsync(url);
             var htmlDoc = new HtmlDocument();
@@ -306,7 +310,7 @@ namespace TenniOddMarathon.Controllers
             var container = htmlDoc.DocumentNode.Descendants("div").Where(node => node.GetAttributeValue("class", "").Equals("category-container")).ToList();
 
 
-            List<TennisOddViewModel> lto = new List<TennisOddViewModel>();
+            List<FootballOddViewModel> lto = new List<FootballOddViewModel>();
             //List<TennisOdd> lto = new List<TennisOdd>();
             foreach (var item in container)
             {
@@ -328,7 +332,7 @@ namespace TenniOddMarathon.Controllers
 
                 foreach (var item2 in category_content)
                 {
-                    TennisOddViewModel to = new TennisOddViewModel();
+                    FootballOddViewModel to = new FootballOddViewModel();
 
 
                     to.TurnirDataPocetok = tdp;
@@ -355,15 +359,20 @@ namespace TenniOddMarathon.Controllers
                             .Where(node => node.GetAttributeValue("class", "")
                             .Equals("price height-column-with-price    first-in-main-row  "))
                             .FirstOrDefault().InnerText.Trim('\n', ' ');
-                        var koeficientSecond = item2.Descendants("td")
+                        var koeficientDraw = item2.Descendants("td")
                             .Where(node => node.GetAttributeValue("class", "")
                             .Equals("price height-column-with-price    "))
                             .FirstOrDefault().InnerText.Trim('\n', ' ');
+                        var koeficientSecond = item2.Descendants("td")
+                            .Where(node => node.GetAttributeValue("class", "")
+                            .Equals("price height-column-with-price    "))
+                            .LastOrDefault().InnerText.Trim('\n', ' ');
 
 
 
-                        to.KoeficientFirst = koeficientFirst;
-                        to.KoeficientSecond = koeficientSecond;
+                        to.KoeficientHost = koeficientFirst;
+                        to.KoeficientDraw = koeficientDraw;
+                        to.KoeficientVisitors = koeficientSecond;
                         to.DateAndBeginingTime = DayAndHour;
                         to.DateAndTime = DateTime.Now;
 
@@ -388,15 +397,21 @@ namespace TenniOddMarathon.Controllers
                             .Where(node => node.GetAttributeValue("class", "")
                             .Equals("price height-column-with-price    first-in-main-row  "))
                             .LastOrDefault().InnerText.Trim('\n', ' ');
-                        var koeficientSecond = item2.Descendants("td")
+                        var koeficientDraw = item2.Descendants("td")
                             .Where(node => node.GetAttributeValue("class", "")
                             .Equals("price height-column-with-price    "))
                             .FirstOrDefault().InnerText.Trim('\n', ' ');
+                        var koeficientSecond = item2.Descendants("td")
+                            .Where(node => node.GetAttributeValue("class", "")
+                            .Equals("price height-column-with-price    "))
+                            .LastOrDefault().InnerText.Trim('\n', ' ');
 
-                        to.KoeficientFirst = koeficientFirst;
-                        to.KoeficientSecond = koeficientSecond;
+                        to.KoeficientHost = koeficientFirst;
+                        to.KoeficientDraw = koeficientDraw;
+                        to.KoeficientVisitors = koeficientSecond;
                         to.DateAndBeginingTime = DayAndHour;
                         to.DateAndTime = DateTime.Now;
+                        
 
 
                     }
@@ -407,6 +422,13 @@ namespace TenniOddMarathon.Controllers
             }
             return lto;
 
+        }
+
+        public async Task<List<BettingOdd>> DatabaseSport()
+        {
+            
+            
+            return _context.BettingOdds.Include(o => o.KoefecientiTennis).ToList(); ;
         }
     }
 }

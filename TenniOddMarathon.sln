@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddMarathon.Dal", "OddMarat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddMarathon.Services", "OddMarathon.Services\OddMarathon.Services.csproj", "{622CA3B9-2A9D-4833-ABA7-767C9B62A218}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddMarathon.Scraper", "OddMarathon.Scraper\OddMarathon.Scraper.csproj", "{DE4AF37C-FD44-4577-A5A0-FA7ADAB77420}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{622CA3B9-2A9D-4833-ABA7-767C9B62A218}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{622CA3B9-2A9D-4833-ABA7-767C9B62A218}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{622CA3B9-2A9D-4833-ABA7-767C9B62A218}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE4AF37C-FD44-4577-A5A0-FA7ADAB77420}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE4AF37C-FD44-4577-A5A0-FA7ADAB77420}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE4AF37C-FD44-4577-A5A0-FA7ADAB77420}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE4AF37C-FD44-4577-A5A0-FA7ADAB77420}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -183,12 +183,13 @@
       <DependentUpon>201807091607528_dateTimeAtKoeficienti.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Models\FootballOdd.cs" />
-    <Compile Include="Models\Koeficienti.cs" />
+    <Compile Include="Models\KoeficientiTennis.cs" />
     <Compile Include="Models\KoeficientiFootball.cs" />
-    <Compile Include="Models\TennisOdd.cs" />
-    <Compile Include="Models\TennisOddContext.cs" />
+    <Compile Include="Models\KoeficientiHandball.cs" />
+    <Compile Include="Models\BettingOdd.cs" />
+    <Compile Include="Models\OddContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\FootballOddViewModel.cs" />
     <Compile Include="ViewModels\TennisOddViewModel.cs" />
   </ItemGroup>
   <ItemGroup>

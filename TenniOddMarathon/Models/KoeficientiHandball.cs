@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace TenniOddMarathon.Models
 {
-    public class KoeficientiFootball
+    public class KoeficientiHandball
     {
         public int Id { get; set; }
-        public int BettingOddId { get; set; }
+        public int OddId { get; set; }
         public string KoeficientHost { get; set; }
         public string KoeficientDraw { get; set; }
         public string KoeficientVisitors { get; set; }
