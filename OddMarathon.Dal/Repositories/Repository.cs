@@ -29,9 +29,21 @@ namespace OddMarathon.Dal.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async void CreateRange(IEnumerable<T> entities)
+        {
+            _context.Set<T>().AddRange(entities);
+            await _context.SaveChangesAsync();
+        }
+
         public async void Delete(T entity)
         {
             _context.Set<T>().Remove(entity);
+            await _context.SaveChangesAsync();
+        }
+
+        public async void DeleteRange(IEnumerable<T> entities)
+        {
+            _context.Set<T>().RemoveRange(entities);
             await _context.SaveChangesAsync();
         }
 

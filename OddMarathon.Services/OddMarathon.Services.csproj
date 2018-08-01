@@ -46,6 +46,9 @@
     <Compile Include="BusinessLogic\Service.cs" />
     <Compile Include="BusinessLogic\Odds\IOddsService.cs" />
     <Compile Include="Class1.cs" />
+    <Compile Include="Dtos\BaseOdd.cs" />
+    <Compile Include="Dtos\FootballOddDto.cs" />
+    <Compile Include="Dtos\TennisOddDto.cs" />
     <Compile Include="Helpers\OddsScraper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

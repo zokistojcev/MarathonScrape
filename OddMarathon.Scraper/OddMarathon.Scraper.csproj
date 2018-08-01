@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AutoMapper, Version=7.0.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.7.0.1\lib\net45\AutoMapper.dll</HintPath>
+    </Reference>
     <Reference Include="CommonServiceLocator, Version=2.0.3.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
       <HintPath>..\packages\Unity.5.8.6\lib\net46\CommonServiceLocator.dll</HintPath>
     </Reference>
@@ -47,6 +50,10 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -76,21 +83,25 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Dtos\BaseOdd.cs" />
-    <Compile Include="Dtos\FootballOddDto.cs" />
-    <Compile Include="Dtos\TennisOddDto.cs" />
+    <Compile Include="DependencyInjection.cs" />
     <Compile Include="OddRequests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OddMarathon.Dal\OddMarathon.Dal.csproj">
-      <Project>{1042546B-CCCD-415E-9DDE-1E2A0951CB4B}</Project>
+      <Project>{1042546b-cccd-415e-9dde-1e2a0951cb4b}</Project>
       <Name>OddMarathon.Dal</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OddMarathon.Services\OddMarathon.Services.csproj">
+      <Project>{622ca3b9-2a9d-4833-aba7-767c9b62a218}</Project>
+      <Name>OddMarathon.Services</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,13 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
-namespace OddMarathon.Scraper.Dtos
+using OddMarathon.Dal.DataAccess.DomainModels;
+
+namespace OddMarathon.Services.Dtos
 {
     public class FootballOddDto: BaseOdd
     {
+        public FootballOddDto()
+        {
+            SportId = Sport.Football;
+        }
         public string CoefficientHost { get; set; }
         public string CoefficientDraw { get; set; }
         public string CoefficientVisitors { get; set; }

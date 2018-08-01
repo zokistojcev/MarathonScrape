@@ -13,8 +13,10 @@ namespace OddMarathon.Dal.Repositories
           Task<IEnumerable<T>> GetAll();
           Task<IEnumerable<T>> Find(Expression<Func<T, bool>> predicate);
           void Create(T entity);
+          void CreateRange(IEnumerable<T> entities);
           void Update(T entity);
           void Delete(T entity);
+          void DeleteRange(IEnumerable<T> entities);
           Task<int> Count(Expression<Func<T, bool>> predicate);      
     }
 }

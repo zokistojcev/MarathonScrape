@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace OddMarathon.Dal.Repositories.OddsRepository
 {
-    public interface IOddsRepository: IRepository<TennisOdd>
+    public interface IOddsRepository : IRepository<Odd>
     {
-        Task<IEnumerable<TennisOdd>> GetByTournament(string tournament);
+        Task<List<Odd>> GetOddsBySport();
     }
 }

@@ -63,7 +63,7 @@ namespace TenniOddMarathon.Controllers
 
             // da se zemat od DB
             var databaseParovi = _context.BettingOdds.Include(o => o.KoefecientiTennis).ToList();
-            var er = DatabaseSport();
+            //var er = DatabaseSport();
             // ako e prazna listata
             if (databaseParovi.Count() < 1)
             {
@@ -424,11 +424,11 @@ namespace TenniOddMarathon.Controllers
 
         }
 
-        public async Task<List<BettingOdd>> DatabaseSport()
-        {
-            
-            
-            return _context.BettingOdds.Include(o => o.KoefecientiTennis).ToList(); ;
-        }
+        //public async Task<List<BettingOdd>> DatabaseSport()
+        //{
+
+
+        //    return _context.BettingOdds.Include(o => o.KoefecientiTennis).ToList(); ;
+        //}
     }
 }

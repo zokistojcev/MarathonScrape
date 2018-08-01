@@ -10,15 +10,19 @@ using OddMarathon.Dal.DataAccess.DomainModels;
 
 namespace OddMarathon.Dal.Repositories.OddsRepository
 {
-    public class OddsRepository : Repository<TennisOdd>, IOddsRepository
+    public class OddsRepository : Repository<Odd>, IOddsRepository
     {
         public OddsRepository(OddMarathonContext context) : base(context)
         {
         }
 
-        public async Task<IEnumerable<TennisOdd>> GetByTournament(string tournament)
+        public async Task<List<Odd>> GetOddsBySport()
         {
-            return await _context.Set<TennisOdd>().Where(x => x.TurnirDataPocetok == tournament).ToListAsync(); 
+            return await _context.Set<Odd>().ToListAsync();
+
+            var tttt = "";
         }
+     
+   
     }
 }

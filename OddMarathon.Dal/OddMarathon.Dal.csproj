@@ -32,10 +32,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.2\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.2\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -50,9 +50,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataAccess\DomainModels\Koeficienti.cs" />
+    <Compile Include="DataAccess\DomainModels\CoefficientsFootball.cs" />
+    <Compile Include="DataAccess\DomainModels\CoefficientsTennis.cs" />
+    <Compile Include="DataAccess\DomainModels\Sport.cs" />
     <Compile Include="DataAccess\OddMarathonContext.cs" />
-    <Compile Include="DataAccess\DomainModels\TennisOdd.cs" />
+    <Compile Include="DataAccess\DomainModels\Odd.cs" />
+    <Compile Include="Migrations\201807311904234_first.cs" />
+    <Compile Include="Migrations\201807311904234_first.Designer.cs">
+      <DependentUpon>201807311904234_first.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201807312236199_fourth.cs" />
+    <Compile Include="Migrations\201807312236199_fourth.Designer.cs">
+      <DependentUpon>201807312236199_fourth.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\IRepository.cs" />
     <Compile Include="Repositories\OddsRepository\IOddsRepository.cs" />
@@ -60,8 +71,18 @@
     <Compile Include="Repositories\Repository.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201807311904234_first.resx">
+      <DependentUpon>201807311904234_first.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201807312236199_fourth.resx">
+      <DependentUpon>201807312236199_fourth.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

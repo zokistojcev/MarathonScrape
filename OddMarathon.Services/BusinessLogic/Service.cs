@@ -10,7 +10,7 @@ namespace OddMarathon.Services.BusinessLogic
 {
     public class Service<T> : IService<T> where T : class
     {
-        private IRepository<T> _repo;
+        protected IRepository<T> _repo;
         public Service(IRepository<T> repo)
         {
             _repo = repo;

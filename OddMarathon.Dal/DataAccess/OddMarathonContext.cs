@@ -13,8 +13,9 @@ namespace OddMarathon.Dal.DataAccess
         {
         }
 
-        public virtual DbSet<Koeficienti> Koeficientis { get; set; }
-        public virtual DbSet<TennisOdd> TennisOdds { get; set; }
+        public virtual DbSet<CoefficientsTennis> CoefficientsTennis { get; set; }
+        public virtual DbSet<CoefficientsFootball> CoefficientsFootball { get; set; }
+        public virtual DbSet<Odd> Odd { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

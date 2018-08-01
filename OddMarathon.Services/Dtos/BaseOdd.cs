@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OddMarathon.Scraper.Dtos
+namespace OddMarathon.Services.Dtos
 {
     public abstract class BaseOdd
     {
@@ -13,5 +13,12 @@ namespace OddMarathon.Scraper.Dtos
         public string PairTwo { get; set; }
         public DateTime BeginingTime { get; set; }
         public string Tournament { get; set; }
+        public byte SportId { get; set; }
+
+
+        
     }
+
+   
+
 }
