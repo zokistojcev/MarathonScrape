@@ -17,6 +17,7 @@ namespace OddMarathon.Dal.Repositories
           void Update(T entity);
           void Delete(T entity);
           void DeleteRange(IEnumerable<T> entities);
-          Task<int> Count(Expression<Func<T, bool>> predicate);      
+          Task<int> Count(Expression<Func<T, bool>> predicate);
+          Task<bool> SaveChanges();
     }
 }

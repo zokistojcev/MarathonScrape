@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace OddMarathon.Services.Dtos
 {
@@ -13,12 +10,7 @@ namespace OddMarathon.Services.Dtos
         public string PairTwo { get; set; }
         public DateTime BeginingTime { get; set; }
         public string Tournament { get; set; }
-        public byte SportId { get; set; }
-
-
-        
-    }
-
-   
+        public byte SportId { get; set; }      
+    } 
 
 }

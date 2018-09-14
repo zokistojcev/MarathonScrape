@@ -9,10 +9,11 @@ namespace OddMarathon.Services.Dtos
     {
         public TennisOddDto()
         {
-            SportId = Sport.Tennis;
+            
         }
         public string CoefficientFirst { get; set; }
         public string CoefficientSecond { get; set; }
+        public int OddId { get; set; }
         public DateTime Time { get; set; }
     }
 }

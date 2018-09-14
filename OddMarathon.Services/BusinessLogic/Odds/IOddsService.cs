@@ -11,5 +11,6 @@ namespace OddMarathon.Services.BusinessLogic.Odds
     public interface IOddsService: IService<Odd>
     {
         void AddNewOddsTennis(IEnumerable<TennisOddDto> tennisOddDtos);
+        void AddNewOddsFootball(IEnumerable<FootballOddDto> footballOddDtos);
     }
 }

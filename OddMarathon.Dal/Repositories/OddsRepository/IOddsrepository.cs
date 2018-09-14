@@ -10,5 +10,6 @@ namespace OddMarathon.Dal.Repositories.OddsRepository
     public interface IOddsRepository : IRepository<Odd>
     {
         Task<List<Odd>> GetOddsBySport();
+        Task<List<Odd>> GetOddsBySportFootball();
     }
 }

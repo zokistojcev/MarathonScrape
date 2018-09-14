@@ -1,10 +1,12 @@
 ﻿using OddMarathon.Dal.DataAccess;
+using OddMarathon.Dal.DataAccess.DomainModels;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OddMarathon.Dal.Repositories
@@ -26,25 +28,31 @@ namespace OddMarathon.Dal.Repositories
         public async void Create(T entity)
         {
             _context.Set<T>().Add(entity);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
         public async void CreateRange(IEnumerable<T> entities)
-        {
+        {       
             _context.Set<T>().AddRange(entities);
-            await _context.SaveChangesAsync();
+
+            _context.SaveChanges();
+
         }
 
         public async void Delete(T entity)
         {
             _context.Set<T>().Remove(entity);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
+
+
         }
 
         public async void DeleteRange(IEnumerable<T> entities)
         {
-            _context.Set<T>().RemoveRange(entities);
-            await _context.SaveChangesAsync();
+           _context.Set<T>().RemoveRange(entities);
+            _context.SaveChanges();
+
+
         }
 
         public async Task<IEnumerable<T>> Find(Expression<Func<T, bool>> predicate)
@@ -66,6 +74,11 @@ namespace OddMarathon.Dal.Repositories
         {
             _context.Entry(entity).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> SaveChanges()
+        {
+            return await _context.SaveChangesAsync()>0;
         }
     }
 }

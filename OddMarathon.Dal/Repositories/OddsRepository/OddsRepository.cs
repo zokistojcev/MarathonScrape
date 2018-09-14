@@ -1,9 +1,6 @@
-﻿using System;
+﻿
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
 using OddMarathon.Dal.DataAccess;
 using OddMarathon.Dal.DataAccess.DomainModels;
@@ -18,11 +15,16 @@ namespace OddMarathon.Dal.Repositories.OddsRepository
 
         public async Task<List<Odd>> GetOddsBySport()
         {
-            return await _context.Set<Odd>().ToListAsync();
+            return await _context.Set<Odd>().Include(o => o.CoefficientsTennis).ToListAsync();
 
-            var tttt = "";
         }
-     
-   
+
+        public async Task<List<Odd>> GetOddsBySportFootball()
+        {
+            return await _context.Set<Odd>().Include(o => o.CoefficientsFootball).ToListAsync();
+
+        }
+
+
     }
 }
