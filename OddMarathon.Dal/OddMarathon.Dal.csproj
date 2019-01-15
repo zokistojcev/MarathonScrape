@@ -67,6 +67,14 @@
     <Compile Include="Migrations\201809121620208_sportWithId.Designer.cs">
       <DependentUpon>201809121620208_sportWithId.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201812190105446_addingWaterpolo.cs" />
+    <Compile Include="Migrations\201812190105446_addingWaterpolo.Designer.cs">
+      <DependentUpon>201812190105446_addingWaterpolo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201812280200223_SportFromByteToString.cs" />
+    <Compile Include="Migrations\201812280200223_SportFromByteToString.Designer.cs">
+      <DependentUpon>201812280200223_SportFromByteToString.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\IRepository.cs" />
@@ -89,6 +97,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201809121620208_sportWithId.resx">
       <DependentUpon>201809121620208_sportWithId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201812190105446_addingWaterpolo.resx">
+      <DependentUpon>201812190105446_addingWaterpolo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201812280200223_SportFromByteToString.resx">
+      <DependentUpon>201812280200223_SportFromByteToString.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

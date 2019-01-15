@@ -26,10 +26,13 @@ namespace OddMarathon.Scraper
             var oddRequests = container.Resolve<OddRequests>();
 
             //oddRequests.Kopacka();
+            //Thread.Sleep(3000);
+
             await oddRequests.GetFootballOddsFinal();
-       
+            Thread.Sleep(7000);
+
             await oddRequests.GetTennisOddsFinal();
-            Thread.Sleep(6000);
+            Thread.Sleep(7000);
 
         }
         

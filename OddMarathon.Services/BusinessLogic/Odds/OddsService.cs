@@ -154,6 +154,11 @@ namespace OddMarathon.Services.BusinessLogic.Odds
 
             var newPairs = footballOddDtos;
 
+            var lstStrFiltered = newPairs.Distinct().Where(x => x.PairOne == x.PairOne&&x.PairTwo==x.PairTwo).ToList();
+
+
+
+
             // da se zemat od DB
             var databaseParovi = await _oddsRepository.GetOddsBySportFootball();
 

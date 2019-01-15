@@ -22,7 +22,7 @@ namespace OddMarathon.Dal.DataAccess.DomainModels
         public DateTime BeginingTime { get; set; }
 
         public string Tournament { get; set; }
-        public byte Sport { get; set; }
+        public string Sport { get; set; }
         
      
 
