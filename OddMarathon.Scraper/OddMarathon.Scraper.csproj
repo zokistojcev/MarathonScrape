@@ -175,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DependencyInjection.cs" />
+    <Compile Include="ExtensonsHelper.cs" />
     <Compile Include="OddRequests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

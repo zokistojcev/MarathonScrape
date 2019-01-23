@@ -49,7 +49,6 @@
     <Compile Include="Dtos\BaseOdd.cs" />
     <Compile Include="Dtos\FootballOddDto.cs" />
     <Compile Include="Dtos\TennisOddDto.cs" />
-    <Compile Include="Helpers\OddsScraper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

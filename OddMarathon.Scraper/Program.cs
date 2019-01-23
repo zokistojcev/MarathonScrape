@@ -21,12 +21,7 @@ namespace OddMarathon.Scraper
             IUnityContainer container = new UnityContainer();
             DependencyInjection.RegisterDependency(container);
 
-            
-
             var oddRequests = container.Resolve<OddRequests>();
-
-            //oddRequests.Kopacka();
-            //Thread.Sleep(3000);
 
             await oddRequests.GetFootballOddsFinal();
             Thread.Sleep(7000);
