@@ -55,14 +55,25 @@ namespace OddMarathon.Services.BusinessLogic.Odds
             }
 
             //da se prociste spisoko
-           
+
+
+            //var deleteParovi = databaseParovi.Where(y =>
+            //    !newPairs.Any(z => z.PairOne == y.PairOne && z.PairTwo == y.PairTwo && z.SportId==y.Sport)).ToList();
+
+            //var filteredDeletePairs = deleteParovi.Where(z => z.Sport==sport).ToList();
+
+            //if (filteredDeletePairs.Count() > 0)
+            //{
+            //    _oddsRepository.DeleteRange(filteredDeletePairs);
+            //}
 
             var deleteParovi = databaseParovi.Where(y =>
-                !newPairs.Any(z => z.PairOne == y.PairOne && z.PairTwo == y.PairTwo && z.SportId==y.Sport)).ToList();
+                !newPairs.Any(z => z.PairOne == y.PairOne && z.PairTwo == y.PairTwo && z.SportId == y.Sport)).ToList();
 
-            var filteredDeletePairs = deleteParovi.Where(z => newPairs.Any(f => f.SportId == z.Sport)).ToList();
 
-            if (deleteParovi.Count() > 0)
+            var filteredDeletePairs = deleteParovi.Where(g => newPairs.Any(t => t.SportId == g.Sport)).ToList();
+
+            if (filteredDeletePairs.Count() > 0)
             {
                 _oddsRepository.DeleteRange(filteredDeletePairs);
             }
@@ -74,14 +85,22 @@ namespace OddMarathon.Services.BusinessLogic.Odds
                 newPairs.Any(z => z.PairOne == y.PairOne && z.PairTwo == y.PairTwo)).ToList();
 
             var postojatIGiImaNaInternet = newPairs.Where(y =>
-                paroviSoOstanuvatVoDb.Any(z => z.PairOne == y.PairOne && z.PairTwo == y.PairTwo)).ToList();
+                paroviSoOstanuvatVoDb.Any(z => z.PairOne == y.PairOne && z.PairTwo == y.PairTwo && z.Sport==y.SportId)).ToList();
 
             //vie se novi so nagolo treba da se kladat
             var noviInternet = newPairs.Where(y =>
                 !paroviSoOstanuvatVoDb.Any(z => z.PairOne == y.PairOne && z.PairTwo == y.PairTwo)).ToList();
 
 
-           
+            foreach (var item in paroviSoOstanuvatVoDb)
+            {
+                
+                item.CoefficientsTennis = item.CoefficientsTennis.OrderBy(x => x.DateAndTime).ToList();
+
+
+            }
+
+            
             // SO POSTOJAT DODAVANJE NA KOEF
             foreach (var parSoOstanuve in paroviSoOstanuvatVoDb)
             {
@@ -92,7 +111,7 @@ namespace OddMarathon.Services.BusinessLogic.Odds
                     //    var ew = item.CoefficientFirst.First();
                     //}
                     var koef =
-                        parSoOstanuve.CoefficientsTennis.First();
+                        parSoOstanuve.CoefficientsTennis.LastOrDefault();
                     if (koef == null)
                     {
                         break;
@@ -190,9 +209,9 @@ namespace OddMarathon.Services.BusinessLogic.Odds
                 !newPairs.Any(z => z.PairOne == y.PairOne && z.PairTwo == y.PairTwo && z.SportId==y.Sport)).ToList();
 
 
-            var filteredDeletePairs = deleteParovi.Where(z => newPairs.Any(f => f.SportId == z.Sport)).ToList();
+            var filteredDeletePairs = deleteParovi.Where(g => newPairs.Any(t => t.SportId == g.Sport)).ToList();
 
-            if (deleteParovi.Count() > 0)
+            if (filteredDeletePairs.Count() > 0)
             {
                 _oddsRepository.DeleteRange(filteredDeletePairs);
             }
@@ -210,6 +229,13 @@ namespace OddMarathon.Services.BusinessLogic.Odds
             var noviInternet = newPairs.Where(y =>
                 !paroviSoOstanuvatVoDb.Any(z => z.PairOne == y.PairOne && z.PairTwo == y.PairTwo)).ToList();
 
+            foreach (var item in paroviSoOstanuvatVoDb)
+            {
+
+                item.CoefficientsFootball = item.CoefficientsFootball.OrderBy(x => x.DateAndTime).ToList();
+
+
+            }
 
 
             // SO POSTOJAT DODAVANJE NA KOEF
@@ -217,12 +243,12 @@ namespace OddMarathon.Services.BusinessLogic.Odds
             {
                 foreach (var pi in postojatIGiImaNaInternet)
                 {
-                    //foreach (var item in parSoOstanuve.CoefficientsTennis)
+                    //foreach (var item in parSoOstanuve.CoefficientsFootball)
                     //{
-                    //    var ew = item.CoefficientFirst.First();
+                    //    var ew = item..First();
                     //}
                     var koef =
-                        parSoOstanuve.CoefficientsFootball.First();
+                        parSoOstanuve.CoefficientsFootball.LastOrDefault();
                     if (koef == null)
                     {
                         break;

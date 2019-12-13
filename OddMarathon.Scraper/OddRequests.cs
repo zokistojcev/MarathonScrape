@@ -1,20 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
+using NuGet.Common;
 using OddMarathon.Services.BusinessLogic.Odds;
 using OddMarathon.Services.Dtos;
+using ScrapySharp.Extensions;
 
 
 namespace OddMarathon.Scraper
 {
     public class OddRequests
     {
-        private readonly IOddsService _oddsService;
+        private static string[][] MARATHON_TWO_ODDS_URLS;
 
+        private readonly IOddsService _oddsService;
 
         public OddRequests(IOddsService oddsService)
         {
@@ -22,236 +26,346 @@ namespace OddMarathon.Scraper
 
         }
 
-        public async Task<List<FootballOddDto>> GetFootballsOdds(string url, string sport)
+        public async Task<IEnumerable<FootballOddDto>> GetFootballsOdds(IEnumerable<HtmlDocument> htmlFootball)
         {
-            var htmlDoc = await GetHtmlDocument(url);
-         
-            var containers = htmlDoc.DocumentNode.Descendants("div").Where(t => t.GetAttributeValue("class", "").Equals("category-container"));
-            
-            var containersWithoutDuplicate = new List<HtmlNode>();
-            var containersWithDuplicate = new List<HtmlNode>();
-
-            foreach (var item in containers) 
-            {
-          
-                var duplicate = item.SelectNodes("div[contains(@class,'category-content')]/div[contains(@class,'foot-market-border')]/div[contains(@class,'foot-market')]/div[contains(@class,' coupon-row')]/div[contains(@class,'category-container')]");             
-                var duplicate3jk = item.Descendants("div").Where(w => w.GetAttributeValue("class", "").Equals("category-container")).ToList();                          
-                var parentNode3 = item.SelectNodes("//*[contains(@class, 'category-container')]");
-         
-
-                if (duplicate3jk!=null&&duplicate3jk.Count()!=0)
-                {
-                    foreach (var item6 in duplicate3jk)
-                    {
-                        var parentNodegdfg = item6.ParentNode.ToString();
-                        
-                        //item.SelectSingleNode(parentNodegdfg).RemoveChild(item6, false);
-                        //item6.SelectSingleNode(parentNode4567).RemoveChild(item6, false);
-                    }
-                }
-
-
-
-                if (duplicate == null)
-                {
-                    containersWithoutDuplicate.Add(item);
-                }
-                else
-                {
-                    containersWithDuplicate.Add(item);
-                }
-            }
-
-            var containersEdited = new List<HtmlNode>();
-
-            foreach (var item in containersWithDuplicate)
-            {
-                var divsToBeDeleted = item.SelectNodes("div[contains(@class,'category-content')]/div[contains(@class,'foot-market-border')]/div[contains(@class,'foot-market')]/div[contains(@class,' coupon-row')]/div[contains(@class,'category-container')]");
-                if (divsToBeDeleted != null)
-                {
-                    foreach (var item3 in divsToBeDeleted)
-                    {
-                        item.SelectSingleNode("div[contains(@class,'category-content')]/div[contains(@class,'foot-market-border')]/div[contains(@class,'foot-market')]/div[contains(@class,' coupon-row')]").RemoveChild(item3, false);
-                    }
-
-                }
-                containersEdited.Add(item);
-            }
-            containersWithoutDuplicate.AddRange(containersEdited);
-
             List<FootballOddDto> listFootballOdds = new List<FootballOddDto>();
-
-            foreach (var section in containersWithoutDuplicate)
+            //var htmlDoc = await GetHtmlDocument(url);
+            foreach (var htmlDoc in htmlFootball)
             {
+             
+                var containers = htmlDoc.DocumentNode.Descendants("div").Where(t => t.GetAttributeValue("class", "").Equals("category-container"));
 
+                var sport2 = htmlDoc.DocumentNode.Descendants("a").Where(t => t.GetAttributeValue("class", "").Equals("sport-category-label")).FirstOrDefault().InnerText;
 
-                var tableSection = section.Descendants("H2")
-                    .Where(node => node.GetAttributeValue("class", "")
-                        .Equals("category-label")).FirstOrDefault();
-                if (tableSection==null)
+                foreach (var section in containers)
                 {
-                    break;
-                }
-                var tableSectionTitle = tableSection.InnerText;
-
-                if (tableSectionTitle == "Outright")
-                {
-                    break;
-                }
 
 
-                var oddsPerSection = section.Descendants("tr").Where(node => node.GetAttributeValue("class", "")
-                        .Equals(" sub-row")).ToList();
-                //oddsPerSection.First().Remove();
-                //oddsPerSection.RemoveAt(0);
 
+                    var tableH = section.Descendants("H2").Where(node => node.GetAttributeValue("class", "")
+                           .Equals("category-label "))
+                       .FirstOrDefault();
 
-                foreach (var odd in oddsPerSection)
-                {
-                    FootballOddDto footballOdd = new FootballOddDto
-
+                   
+                    if (tableH == null)
                     {
-                        Tournament = tableSectionTitle
+                        tableH = section.Descendants("H1").Where(node => node.GetAttributeValue("class", "")
+                        .Equals("category-label "))
+                    .FirstOrDefault(); ;
+                    }
+                    var tableSectionTitle = tableH.InnerText;
+
+                  
+                    var resultString = Regex.Replace(tableSectionTitle, @"^((?:\S+\s+){0}\S+).*", "${1}", RegexOptions.Multiline);
+
+                    if (resultString.Contains("Outright."))
+                    {
+                        continue;
+                    }
+
+                
+
+
+                    var oddsPerSection = section.Descendants("tr").Where(node => node.GetAttributeValue("class", "")
+                            .Equals("sub-row")).ToList();
+                    //oddsPerSection.First().Remove();
+                    //oddsPerSection.RemoveAt(0);
+
+
+                    foreach (var odd in oddsPerSection)
+                    {
+                        FootballOddDto footballOdd = new FootballOddDto
+
+                        {
+                            Tournament = tableSectionTitle
+                        };
+
+                        var giii = odd.Descendants("div")
+                          .Where(node =>
+                              node.GetAttributeValue("class", "").Equals("hint")
+
+                              );
+
+                        if (giii.Count() > 0)
+                        {
+                            Console.WriteLine("zokiiiiiiiiiiiii");
+
+                            var dupicateSection = oddsPerSection.FirstOrDefault();
+
+
+                            var dayAndHour = dupicateSection.Descendants("td")
+                                .Where(node => node.GetAttributeValue("class", "")
+                                .Equals("date"));
+                            string dayAndHour2;
+                            if (dayAndHour == null)
+                            {
+                                dayAndHour2 = DateTime.Now.ToString("yyyyMMddHHmmss");
+
+
+
+                            }
+                            else
+                            {
+
+                                dayAndHour2 = dayAndHour.First().InnerText.Trim('\n', ' ');
+                                GetDateTime(dayAndHour2);
+                            }
+
+                            footballOdd.BeginingTime = GetDateTime(dayAndHour2);
+
+                            var match = dupicateSection.Descendants("td")
+                             .Where(node =>
+                                 node.GetAttributeValue("class", "").Equals("today-name")
+                                 ||
+                                 node.GetAttributeValue("class", "").Equals("name")
+                                 ||
+                                 node.GetAttributeValue("class", "").Equals("date-with-year-name"));
+
+                       
+                            var pairOneTitle = odd.Descendants("span").FirstOrDefault().InnerText;
+                            var pairTwoTitle = odd.Descendants("span").Skip(1).FirstOrDefault().InnerText;
+
+                           
+                            var plusButton = odd.Descendants("span").Skip(2).FirstOrDefault();
+
+
+
+                            var coefficientFirstH = odd.Descendants("span").Skip(3).FirstOrDefault();
+                            HtmlNode coefficientDrawH;
+                            HtmlNode coefficientSecondH;
+                            var dfg = odd.Descendants("span").Skip(4);
+                            if (dfg.Count() < 1)
+                            {
+                                Console.WriteLine("errror");
+
+                                coefficientDrawH = coefficientFirstH;
+                                coefficientFirstH = plusButton;
+                                coefficientSecondH = odd.Descendants("span").Skip(4).FirstOrDefault();
+                            }
+                            else
+                            {
+
+                                coefficientDrawH = odd.Descendants("span").Skip(4).FirstOrDefault();
+                                coefficientSecondH = odd.Descendants("span").Skip(5).FirstOrDefault();
+                            }
+
+
+
+
+
+                            footballOdd.PairOne = pairOneTitle;
+                            footballOdd.PairTwo = pairTwoTitle;
+
+
+                            if (coefficientFirstH == null)
+                            {
+                                footballOdd.CoefficientHost = "1";
+                            }
+                            else
+                            {
+                                if (coefficientFirstH.InnerText.Contains("("))
+                                {
+                                    footballOdd.CoefficientHost = "1";
+                                }
+                                footballOdd.CoefficientHost = coefficientFirstH.InnerText;
+
+                            }
+
+
+                            if (coefficientDrawH == null)
+                            {
+                                footballOdd.CoefficientDraw = "1";
+                            }
+                            else
+                            {
+                                if (coefficientDrawH.InnerText.Contains("("))
+                                {
+                                    footballOdd.CoefficientDraw = "1";
+                                }
+                                footballOdd.CoefficientDraw = coefficientDrawH.InnerText;
+                            }
+
+
+                            if (coefficientSecondH == null)
+                            {
+                                footballOdd.CoefficientVisitors = "1";
+                            }
+                            else
+                            {
+                                if (coefficientSecondH.InnerText.Contains("("))
+                                {
+                                    footballOdd.CoefficientVisitors = "1";
+                                }
+
+                                footballOdd.CoefficientVisitors = coefficientSecondH.InnerText;
+                            }
+
+                            footballOdd.Time = DateTime.Now;
+                            footballOdd.SportId = sport2;
+                            listFootballOdds.Add(footballOdd);
+                            break;
+
+
+                        }
+
+
+
+
+
+
+                        else
+                        {
+                            var dayAndHour = odd.Descendants("td")
+                                .Where(node => node.GetAttributeValue("class", "")
+                                .Equals("date"));
+                            string dayAndHour2;
+                            if (dayAndHour==null)
+                            {
+                                dayAndHour2 = DateTime.Now.ToString("yyyyMMddHHmmss");
+                                
+
+
+                            }
+                            else
+                            {
+
+                                dayAndHour2 = dayAndHour.First().InnerText.Trim('\n', ' ');
+                                
+                            }
+                            GetDateTime(dayAndHour2);
+
+                            footballOdd.BeginingTime = GetDateTime(dayAndHour2);
+
+                            var match = odd.Descendants("td")
+                             .Where(node =>
+                                 node.GetAttributeValue("class", "").Equals("today-name")
+                                 ||
+                                 node.GetAttributeValue("class", "").Equals("name")
+                                 ||
+                                 node.GetAttributeValue("class", "").Equals("date-with-year-name"));
+
+
+                            var pairOneTitle = odd.Descendants("span").FirstOrDefault().InnerText;
+                            var pairTwoTitle = odd.Descendants("span").Skip(1).FirstOrDefault().InnerText;
+
+                            var coefficientFirstH = odd.Descendants("span").Skip(3).FirstOrDefault();
+                            var coefficientDrawH = odd.Descendants("span").Skip(4).FirstOrDefault();
+                            var coefficientSecondH = odd.Descendants("span").Skip(5).FirstOrDefault();
+
+
+                            var plusButton = odd.Descendants("span").Skip(2).FirstOrDefault();
+
+                            if (!plusButton.InnerText.Contains("+"))
+                            {
+                                coefficientFirstH = odd.Descendants("span").Skip(2).FirstOrDefault();
+                                coefficientDrawH = odd.Descendants("span").Skip(3).FirstOrDefault();
+                                coefficientSecondH = odd.Descendants("span").Skip(4).FirstOrDefault();
+                            }
+
+
+
+
+                            
+                            footballOdd.PairOne = pairOneTitle;
+                            footballOdd.PairTwo = pairTwoTitle;
+
+
+
+                            if (coefficientFirstH == null)
+                            {
+                                footballOdd.CoefficientHost = "1";
+                            }
+                            else
+                            {
+                                if (coefficientFirstH.InnerText.Contains("("))
+                                {
+                                    footballOdd.CoefficientHost = "1";
+                                }
+                                footballOdd.CoefficientHost = coefficientFirstH.InnerText;
+                               
+                            }
+
+
+                            if (coefficientDrawH == null)
+                            {
+                                footballOdd.CoefficientDraw = "1";
+                            }
+                            else
+                            {
+                                if (coefficientDrawH.InnerText.Contains("("))
+                                {
+                                    footballOdd.CoefficientDraw = "1";
+                                }
+                                footballOdd.CoefficientDraw = coefficientDrawH.InnerText;
+                            }
+
+
+                            if (coefficientSecondH == null)
+                            {
+                                footballOdd.CoefficientVisitors = "1";
+                            }
+                            else
+                            {
+                                if (coefficientSecondH.InnerText.Contains("("))
+                                {
+                                    footballOdd.CoefficientVisitors = "1";
+                                }
+                                
+                                footballOdd.CoefficientVisitors = coefficientSecondH.InnerText;
+                            }
+                            footballOdd.Time = DateTime.Now;
+
+                            footballOdd.SportId = sport2;
+                        }
+
+
+
+
+
+
+                        listFootballOdds.Add(footballOdd);
                     };
-
-                    
-                    
-
-
-                    var dayAndHour2 = odd.Descendants("td")
-                       .Where(node => node.GetAttributeValue("class", "")
-                       .Equals("date "))
-                       ;
-
-                    var dayAndHour = odd.Descendants("td")
-                        .Where(node => node.GetAttributeValue("class", "")
-                        .Equals("date "))
-                        .First().InnerText.Trim('\n', ' ');
+                }
 
 
 
-                    bool isValidData = DateTime.TryParse(dayAndHour, out DateTime data);
-
-                    if (!isValidData)
-                    {
-                        String inputString = dayAndHour;
-
-                        inputString = Regex.Replace(inputString, " \\(.*\\)$", "");
-
-                        data = DateTime.ParseExact(inputString, "dd MMM HH:mm",
-                            System.Globalization.CultureInfo.InvariantCulture);
-
-                    }
-
-
-                    footballOdd.BeginingTime = data;
-
-                    var match = odd.Descendants("td")
-                        .Where(node =>
-                            node.GetAttributeValue("class", "").Equals("today-name")
-                            ||
-                            node.GetAttributeValue("class", "").Equals("name")
-                            ||
-                            node.GetAttributeValue("class", "").Equals("date-with-year-name"));
-
-
-
-
-
-                    var pairOneTitle = match
-                        .First()
-                        .InnerText.Trim('\n', ' ', '1', '2', '.');
-
-
-                    var pairTwoTitle = match
-                        .Last()
-                        .InnerText.Trim('\n', ' ', '1', '2', '.');
-
-                    footballOdd.PairOne = pairOneTitle;
-                    footballOdd.PairTwo = pairTwoTitle;
-
-
-                    var coefficientFirstH = odd.Descendants("td")
-                        .Where(node => node.GetAttributeValue("class", "")
-                        .Equals("price height-column-with-price    first-in-main-row  coupone-width-3"))
-                        .FirstOrDefault();
-                    string coefficientFirst = "1";
-                    if (coefficientFirstH == null)
-                    {
-                        footballOdd.CoefficientHost = coefficientFirst;
-                    }
-                    else
-                    {
-                        coefficientFirst = coefficientFirstH.InnerText.Trim('\n', ' ');
-                    }
-
-
-                    var coefficientDrawH = odd.Descendants("td")
-                        .Where(node => node.GetAttributeValue("class", "")
-                        .Equals("price height-column-with-price    coupone-width-3"))
-                        .FirstOrDefault();
-
-
-                    string coefficientDraw = "1";
-                    if (coefficientDrawH == null)
-                    {
-                        footballOdd.CoefficientDraw = coefficientDraw;
-                    }
-                    else
-                    {
-                        coefficientDraw = coefficientDrawH.InnerText.Trim('\n', ' ');
-                    }
-
-
-                    var coefficientSecondH = odd.Descendants("td")
-                        .Where(node => node.GetAttributeValue("class", "")
-                        .Equals("price height-column-with-price    coupone-width-3"))
-                        .LastOrDefault();
-
-                    string coefficientSecond = "1";
-                    if (coefficientSecondH == null)
-                    {
-                        footballOdd.CoefficientVisitors = coefficientSecond;
-                    }
-                    else
-                    {
-                        coefficientSecond = coefficientSecondH.InnerText.Trim('\n', ' ');
-                    }
-
-                    footballOdd.CoefficientHost = coefficientFirst;
-                    footballOdd.CoefficientDraw = coefficientDraw;
-                    footballOdd.CoefficientVisitors = coefficientSecond;
-                    footballOdd.Time = DateTime.Now;
-
-                    footballOdd.SportId = sport;
-
-                    //foreach (var itemy in listFootballOdds)
-                    //{
-                    //    if (footballOdd.PairOne != itemy.PairOne&&footballOdd.PairTwo != itemy.PairTwo)
-                    //    {
-                    //        listFootballOdds.Add(footballOdd);
-
-                    //    }
-                    //    else
-                    //    {
-                    //        continue;
-                    //    }
-                    //}
-                    
-
-                    listFootballOdds.Add(footballOdd);
-                };
             }
-
-
             var cleanedList = listFootballOdds.DistinctBy(x => new { x.PairOne, x.PairTwo, x.SportId });
-           
+            
 
 
-            return listFootballOdds;
+            return cleanedList;
         }
 
-        private static async Task<HtmlDocument> GetHtmlDocument(string url)
+        private static DateTime GetDateTime(string dayAndHour)
+        {
+            if (string.IsNullOrWhiteSpace(dayAndHour))
+            {
+                //throw new ArgumentException("dayAndHour Is Null Or White Space", nameof(dayAndHour));
+                return DateTime.Now;
+            }
+
+            if (false)
+            {
+                throw new ArgumentException(nameof(dayAndHour));
+            }
+
+            var inputString = Regex.Replace(dayAndHour, " \\(.*\\)$", "");
+
+            //if (inputString.Any(c => char.IsLetter(c)))
+            //{
+            //    return DateTime.ParseExact(inputString, "dd MMM HH:mm",
+            //        System.Globalization.CultureInfo.InvariantCulture);
+            //}
+            CultureInfo culture = new CultureInfo("en-US");
+            DateTime tempDate = Convert.ToDateTime(dayAndHour, culture);
+
+            
+
+            return tempDate;
+        }
+
+        private static async Task<HtmlDocument> GetHtmlDocument3(string url)
         {
             var httpClient = new HttpClient();
             var html = await httpClient.GetStringAsync(url);
@@ -261,300 +375,665 @@ namespace OddMarathon.Scraper
             return htmlDoc;
         }
 
-        public async Task<List<TennisOddDto>> GetTennisOddsEdit(string url, string sport)
+        private static async Task<IEnumerable<HtmlDocument>> GetHtmlDocument(List<string> urls)
         {
+            
+            
+            var x = new List<HtmlDocument>();
+            //var htmlDoc = new HtmlDocument();
 
-            var htmlDoc = await GetHtmlDocument(url);
 
 
-            var containers = htmlDoc.DocumentNode.Descendants("div")
+            using (var httpClient = new HttpClient())
+            {
+                foreach (var baseUrl in urls)
+                {
+                    for (int i = 0; i < 50; i++)
+                    {
+
+                        string url = baseUrl + "?page=" + i;
+
+
+                        using (var response = await httpClient.GetAsync(url))
+                        {
+                            var zz = response.RequestMessage.RequestUri.ToString();
+                            string constent = await response.Content.ReadAsStringAsync();
+                            if (!response.IsSuccessStatusCode || zz == "https://www.marathonbet.com/en/")
+                            {
+                                break;
+                            }
+                            var document = new HtmlDocument();
+
+                           document.LoadHtml(await response.Content.ReadAsStringAsync());
+                            x.Add(document);
+                        }
+
+
+                    }
+                }
+            }
+            return x;
+            
+          
+        }
+
+        public async Task<IEnumerable<TennisOddDto>> GetTennisOddsEdit(IEnumerable<HtmlDocument> htmlTennis)
+        {
+            List<TennisOddDto> listTennisOdds = new List<TennisOddDto>();
+            //var htmlDoc = await GetHtmlDocument(url);
+            foreach (var htmlDoc in htmlTennis)
+            {
+                var containers = htmlDoc.DocumentNode.Descendants("div")
                 .Where(node => node.GetAttributeValue("class", "")
                     .Equals("category-container"))
                 .ToList();
 
+                var sport = htmlDoc.DocumentNode.Descendants("a").Where(t => t.GetAttributeValue("class", "").Equals("sport-category-label")).FirstOrDefault().InnerText;
+
+                
 
 
-            var containersClean = new List<HtmlNode>();
-            var containersWithDuplicate = new List<HtmlNode>();
-
-            foreach (var item in containers)
-            {
-              
-                var duplicate = item.SelectNodes("div[contains(@class,'category-content')]/div[contains(@class,'foot-market-border')]/div[contains(@class,'foot-market')]/div[contains(@class,' coupon-row')]/div[contains(@class,'category-container')]");
-                if (duplicate == null)
+                foreach (var section in containers)
                 {
 
-                    containersClean.Add(item);
-                }
-                else
-                {
-                    containersWithDuplicate.Add(item);
-                }
-            }
-
-            var containersEdited = new List<HtmlNode>();
-
-            foreach (var item in containersWithDuplicate)
-            {
-                var divsToBeDeleted = item.SelectNodes("div[contains(@class,'category-content')]/div[contains(@class,'foot-market-border')]/div[contains(@class,'foot-market')]/div[contains(@class,' coupon-row')]/div[contains(@class,'category-container')]");
-                if (divsToBeDeleted != null)
-                {
-                    foreach (var item3 in divsToBeDeleted)
-                    {
-
-                        item.SelectSingleNode("div[contains(@class,'category-content')]/div[contains(@class,'foot-market-border')]/div[contains(@class,'foot-market')]/div[contains(@class,' coupon-row')]").RemoveChild(item3, false);
-                    }
-
-                }
-                containersEdited.Add(item);
-            }
-            containersClean.AddRange(containersEdited);
-
-
-
-            List<TennisOddDto> listTennisOdds = new List<TennisOddDto>();
-
-            foreach (var section in containersClean)
-            {
-                //var tableSectionTitle = section.Descendants("H2")
-                //    .Where(node => node.GetAttributeValue("class", "")
-                //        .Equals("category-label"))
-                //    .FirstOrDefault()
-                //    .InnerText;
-
-
-                var tableH = section.Descendants("H2").Where(node => node.GetAttributeValue("class", "")
-                        .Equals("category-label"))
-                    .FirstOrDefault();
-                if (tableH == null)
-                {
-                    tableH = section.Descendants("H1").Where(node => node.GetAttributeValue("class", "")
-                    .Equals("category-label"))
-                .FirstOrDefault(); ;
-                }
-                var tableSectionTitle = tableH.InnerText;
-
-
-
-
-                var resultString = Regex.Replace(tableSectionTitle, @"^((?:\S+\s+){0}\S+).*", "${1}", RegexOptions.Multiline);
-
-                if (resultString == "Outright." || resultString == "Outright")
-                {
-                    continue;
-                }
-
-
-                var oddsPerSection = section.Descendants("tr").Where(node => node.GetAttributeValue("class", "")
-                        .Equals(" sub-row"));
-                //var oddsPerSection = section.Descendants("tr")
-                //    .Where(node => node.GetAttributeValue("class", "")
-                //        .Equals(" event-header"))
-                //    .ToList();
-
-                foreach (var odd in oddsPerSection)
-                {
-                    TennisOddDto tennisOdd = new TennisOddDto
-                    {
-                        Tournament = tableSectionTitle
-                    };
-
-                    var match = odd.Descendants("td")
-                        .Where(node =>
-                            node.GetAttributeValue("class", "").Equals("today-name")
-                            ||
-                            node.GetAttributeValue("class", "").Equals("name")                         
-                            ||
-                            node.GetAttributeValue("class", "").Equals("date-with-year-name")
-
-                            );
-
-                    var dayAndHour = odd.Descendants("td")
-                        .Where(node => node.GetAttributeValue("class", "")
-                        .Equals("date "))
-                        .FirstOrDefault().InnerText.Trim('\n', ' ');
-
-
-                    bool isValidData = DateTime.TryParse(dayAndHour, out DateTime data);
-
-                    if (!isValidData)
-                    {
-                        String inputString = dayAndHour;
-
-                        inputString = Regex.Replace(inputString, " \\(.*\\)$", "");
-
-                        data = DateTime.ParseExact(inputString, "dd MMM HH:mm",
-                            System.Globalization.CultureInfo.InvariantCulture);
-
-                    }
-
-
-                    tennisOdd.BeginingTime = data;
-
-                    var pairOneTitle = match
-                        .First()
-                        .InnerText.Trim('\n', ' ', '1', '2', '.');
-
-                    var pairTwoTitle = match
-                        .Last()
-                        .InnerText.Trim('\n', ' ', '1', '2', '.');
-
-                    tennisOdd.PairOne = pairOneTitle;
-                    tennisOdd.PairTwo = pairTwoTitle;
-
-
-                    string coefficientFirst = "";
-                    var cf = odd.Descendants("td")
-                        .Where(node => node.GetAttributeValue("class", "")
-                        .Equals("price height-column-with-price    first-in-main-row  coupone-width-2"))
+                    var tableH = section.Descendants("H2").Where(node => node.GetAttributeValue("class", "")
+                            .Equals("category-label "))
                         .FirstOrDefault();
 
-                    if (cf == null)
+                    if (tableH == null)
                     {
-                        coefficientFirst = "1";
+                        tableH = section.Descendants("H1").Where(node => node.GetAttributeValue("class", "")
+                        .Equals("category-label "))
+                    .FirstOrDefault(); ;
                     }
-                    else
-                    {
-                        coefficientFirst = cf.InnerText.Trim('\n', ' ');
-                    }
+                    var tableSectionTitle = tableH.InnerText;
 
 
-                    string coefficientSecond = "";
-                    var cs = odd.Descendants("td")
-                       .Where(node => node.GetAttributeValue("class", "")
-                        .Equals("price height-column-with-price    coupone-width-2"))
-                        .FirstOrDefault();
+                    var resultString = Regex.Replace(tableSectionTitle, @"^((?:\S+\s+){0}\S+).*", "${1}", RegexOptions.Multiline);
 
-                    if (cs == null)
+                    if (resultString.Contains("Outright."))
                     {
-                        coefficientSecond = "1";
-                    }
-                    else
-                    {
-                        coefficientSecond = cs.InnerText.Trim('\n', ' ');
+                        continue;
                     }
 
 
 
-                    //var ee = coefficientFirstt.InnerText;
-                    //var coefficientSecond = odd.Descendants("td")
+                    var oddsPerSection = section.Descendants("tr").Where(node => node.GetAttributeValue("class", "")
+                            .Equals("sub-row"));
+                    //var oddsPerSection = section.Descendants("tr")
                     //    .Where(node => node.GetAttributeValue("class", "")
-                    //    .Equals("price height-column-with-price    "))
-                    //    .FirstOrDefault().InnerText.Trim('\n', ' '); ;
+                    //        .Equals(" event-header"))
+                    //    .ToList();
 
 
-                    //}
-                    //if (coefficientSecond == "—")
-                    //{
-                    //    coefficientSecond = "1";
-                    //}
-                    tennisOdd.SportId = sport;
-                    tennisOdd.CoefficientFirst = coefficientFirst;
-                    tennisOdd.CoefficientSecond = coefficientSecond;
-                    tennisOdd.Time = DateTime.Now;
 
 
-                    listTennisOdds.Add(tennisOdd);
-                };
+                    foreach (var odd in oddsPerSection)
+                    {
+                        TennisOddDto tennisOdd = new TennisOddDto
+                        {
+                            Tournament = tableSectionTitle
+                        };
+
+
+                        var giii = odd.Descendants("div")
+                           .Where(node =>
+                               node.GetAttributeValue("class", "").Equals("hint")
+
+                               );
+
+                        if (giii.Count() > 0)
+                        {
+                            Console.WriteLine("zokiiiiiiiiiiiii");
+
+                            var dupicateSection = oddsPerSection.FirstOrDefault();
+                            var match = dupicateSection.Descendants("td")
+                                .Where(node =>
+                                    node.GetAttributeValue("class", "").Equals("today-name")
+                                    ||
+                                    node.GetAttributeValue("class", "").Equals("name")
+                                    ||
+                                    node.GetAttributeValue("class", "").Equals("date-with-year-name")
+
+                                    );
+
+                            var dayAndHour = dupicateSection.Descendants("td")
+                                .Where(node => node.GetAttributeValue("class", "")
+                                .Equals("date"));
+                                
+                            string dayAndHour2;
+                            if (dayAndHour!=null)
+                            {
+                                dayAndHour2 = dayAndHour.FirstOrDefault().InnerText.Trim('\n', ' ');
+                            }
+                            else
+                            {
+                                dayAndHour2 = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+                            }
+
+
+
+
+
+                            tennisOdd.BeginingTime = GetDateTime(dayAndHour2);
+
+                            var pairOneTitle = odd.Descendants("span").FirstOrDefault().InnerText;
+                            var pairTwoTitle = odd.Descendants("span").Skip(1).FirstOrDefault().InnerText;
+
+                            var coefficientFirstH = odd.Descendants("span").Skip(3).FirstOrDefault();
+                            var coefficientSecondH = odd.Descendants("span").Skip(4).FirstOrDefault();
+
+                            var plusButton = odd.Descendants("span").Skip(2).FirstOrDefault().InnerText;
+
+                            if (!plusButton.Contains("+"))
+                            {
+                                coefficientFirstH = odd.Descendants("span").Skip(2).FirstOrDefault();
+                                coefficientSecondH = odd.Descendants("span").Skip(3).FirstOrDefault();
+                            }
+
+
+
+
+                            tennisOdd.PairOne = pairOneTitle;
+                            tennisOdd.PairTwo = pairTwoTitle;
+
+                            if (coefficientFirstH == null)
+                            {
+                                tennisOdd.CoefficientFirst = "1";
+                            }
+
+                            else
+                            {
+                                if (coefficientFirstH.InnerText.Contains("("))
+                                {
+                                    tennisOdd.CoefficientFirst = "1";
+                                }
+                                tennisOdd.CoefficientFirst = coefficientFirstH.InnerText;
+                            }
+
+                            if (coefficientSecondH == null)
+                            {
+                                tennisOdd.CoefficientSecond = "1";
+                            }
+                            else
+                            {
+
+                                if (coefficientSecondH.InnerText.Contains("("))
+                                {
+                                    tennisOdd.CoefficientSecond = "1";
+                                }
+                                tennisOdd.CoefficientSecond = coefficientSecondH.InnerText;
+                            }
+
+                            tennisOdd.SportId = sport;
+
+                            tennisOdd.Time = DateTime.Now;
+
+
+                            listTennisOdds.Add(tennisOdd);
+                            break;
+                        }
+
+
+                        else
+                        {
+
+
+
+
+
+                            var match = odd.Descendants("td")
+                                    .Where(node =>
+                                        node.GetAttributeValue("class", "").Equals("today-name")
+                                        ||
+                                        node.GetAttributeValue("class", "").Equals("name")
+                                        ||
+                                        node.GetAttributeValue("class", "").Equals("date-with-year-name")
+
+                                        );
+
+                            var dayAndHour = odd.Descendants("td")
+                                .Where(node => node.GetAttributeValue("class", "")
+                                .Equals("date"));
+
+                            string dayAndHour2;
+                            if (dayAndHour != null)
+                            {
+                                dayAndHour2 = dayAndHour.FirstOrDefault().InnerText.Trim('\n', ' ');
+                            }
+                            else
+                            {
+                                dayAndHour2 = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+                            }
+
+
+
+
+
+                            tennisOdd.BeginingTime = GetDateTime(dayAndHour2);
+
+                            var pairOneTitle = odd.Descendants("span").FirstOrDefault().InnerText;
+                            var pairTwoTitle = odd.Descendants("span").Skip(1).FirstOrDefault().InnerText;
+
+                            var plusButton = odd.Descendants("span").Skip(2).FirstOrDefault().InnerText;
+
+
+
+                            var coefficientFirstH = odd.Descendants("span").Skip(3).FirstOrDefault().InnerText;
+                            var coefficientSecondH = "1";
+                            var dfg = odd.Descendants("span").Skip(4);
+                            if (dfg.Count() < 1)
+                            {
+                                Console.WriteLine("errror");
+
+                                coefficientSecondH = coefficientFirstH;
+                                coefficientFirstH = plusButton;
+                            }
+                            else
+                            {
+                                coefficientSecondH = odd.Descendants("span").Skip(4).FirstOrDefault().InnerText;
+                            }
+
+
+                            tennisOdd.PairOne = pairOneTitle;
+                            tennisOdd.PairTwo = pairTwoTitle;
+
+                            if (coefficientFirstH == null)
+                            {
+                                tennisOdd.CoefficientFirst = "1";
+                            }
+
+                            else
+                            {
+                                if (coefficientFirstH.Contains("("))
+                                {
+                                    tennisOdd.CoefficientFirst = "1";
+                                }
+                                tennisOdd.CoefficientFirst = coefficientFirstH;
+                            }
+
+                            if (coefficientSecondH == null)
+                            {
+                                tennisOdd.CoefficientSecond = "1";
+                            }
+                            else
+                            {
+
+                                if (coefficientSecondH.Contains("("))
+                                {
+                                    tennisOdd.CoefficientSecond = "1";
+                                }
+                                tennisOdd.CoefficientSecond = coefficientSecondH;
+                            }
+
+                            tennisOdd.SportId = sport;
+                            tennisOdd.Time = DateTime.Now;
+
+                            listTennisOdds.Add(tennisOdd);
+                        }
+                    };
+                }
+
+
+               
             }
-
-
-
+            var cleanedList = listTennisOdds.DistinctBy(x => new { x.PairOne, x.PairTwo, x.SportId });
 
             return listTennisOdds;
+
         }
 
-        public async Task<List<TennisOddDto>> GetTennisOddsFinal()
-        {
-            Dictionary<string, string> allUrls = new Dictionary<string, string>();
-            allUrls.Add("Basketball", "https://www.marathonbet.com/en/betting/Basketball/?menu=6");
-            allUrls.Add("Tennis", "https://www.marathonbet.com/en/betting/Tennis/?menu=2398");
-            allUrls.Add("Baseball", "https://www.marathonbet.com/en/betting/Baseball/?menu=5");
-            //gg.Add("Darts", "https://www.marathonbet.com/en/betting/Darts/?menu=9");
-            //gg.Add(7, "https://www.marathonbet.com/en/betting/Badminton/?menu=382581");
-            //gg.Add("American Football", "https://www.marathonbet.com/en/betting/American+Football/?menu=4");
-            allUrls.Add("Voleyball", "https://www.marathonbet.com/en/betting/Volleyball/?menu=22712");
-            //gg.Add(10, "https://www.marathonbet.com/en/betting/MMA/?menu=439050");
-            //gg.Add("Snooker", "https://www.marathonbet.com/en/betting/Snooker/?menu=2185");
-            //gg.Add(12, "https://www.marathonbet.com/en/betting/e-Sports/?menu=1895085");
-            //gg.Add(13, "https://www.marathonbet.com/en/betting/Cricket/?menu=8");
-            //gg.Add(14, "https://www.marathonbet.com/en/betting/Boxing/?menu=7");
+        public async Task<IEnumerable<TennisOddDto>> GetTennisOddsFinal()
+        {        
+            var urls = new List<string> {
+               
+                "https://www.marathonbet.com/en/popular/Tennis" ,
+                "https://www.marathonbet.com/en/popular/Volleyball" ,
+                "https://www.marathonbet.com/en/popular/Basketball" ,
+                "https://www.marathonbet.com/en/betting/Table+Tennis" ,
+                "https://www.marathonbet.com/en/popular/Baseball" ,
+                "https://www.marathonbet.com/en/betting/e-Sports" ,
+                "https://www.marathonbet.com/en/betting/Snooker",
+                "https://www.marathonbet.com/en/betting/Darts",
+                "https://www.marathonbet.com/en/betting/Cricket",
+                "https://www.marathonbet.com/en/betting/Boxing",
+                // "https://www.marathonbet.com/en/betting/MMA"
+            };
+
+            
+
+            //List<TennisOddDto> listTennis = new List<TennisOddDto>();
 
 
-            List<TennisOddDto> listTennis = new List<TennisOddDto>();
-            foreach (var item in allUrls)
-            {
+            var tennisPairs = await GetHtmlDocument(urls);
+                //listTennis.AddRange(tennisPairs);
+                var listTennis = await GetTennisOddsEdit(tennisPairs);
+                var filteredPairsTennis = listTennis.DistinctBy(x => new { x.PairOne, x.PairTwo }).ToList();
+                _oddsService.AddNewOddsTennis(filteredPairsTennis);
 
-                var tennisPairs = await GetTennisOddsEdit(item.Value, item.Key);
-                listTennis.AddRange(tennisPairs);
+            
 
-            }
-            _oddsService.AddNewOddsTennis(listTennis);
-            return listTennis;
+            return filteredPairsTennis;
 
         }
 
         public async Task<IEnumerable<FootballOddDto>> GetFootballOddsFinal()
         {
-            
-            var stringsUrl = new List<string[]> {
-                //new string[] { "Handball", "https://www.marathonbet.com/en/betting/Handball/?menu=52914" },
-                new string[]{ "IceHockey", "https://www.marathonbet.com/en/betting/Ice+Hockey/?menu=537" },
-                new string[]{ "Football", "https://www.marathonbet.com/en/betting/Football/?menu=11" }
-                
+            var urls = new List<string> {
+                "https://www.marathonbet.com/en/popular/Ice+Hockey" ,
+                "https://www.marathonbet.com/en/popular/Football" ,
+                "https://www.marathonbet.com/en/popular/Handball" ,
+                "https://www.marathonbet.com/en/popular/Water+Polo" ,
+
             };
 
-  
+            
+
+
+            List<HtmlDocument> lh = new List<HtmlDocument>();
+            
+            var listHtml1 = await GetHtmlDocument(urls);
+           
+
             List<FootballOddDto> listFootball = new List<FootballOddDto>();
-        
 
-            foreach (var item in stringsUrl)
+            
+                var ttt = await GetFootballsOdds(listHtml1);
+            
+
+            if (ttt.Count() != 0)
             {
-                for (int i = 0; i < 50; i++)
-                {
-                    string z = i.ToString();
-                    string url = item[1] + "&page=" + z;
-                    using (HttpClient client = new HttpClient())
-                    {
-                        HttpResponseMessage response = await client.GetAsync(url);
+                var yuuyif = ttt.DistinctBy(x => new { x.PairOne, x.PairTwo });
 
-                        if (response.IsSuccessStatusCode)
-                        {
-                            var ttt = await GetFootballsOdds(url, item[0]);
-
-                            if (ttt.Count() != 0)
-                            {
-                                var yuuyif = ttt.DistinctBy(x => new { x.PairOne, x.PairTwo });
-
-                                listFootball.AddRange(yuuyif);
-                            }
-
-
-                        }
-
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                }
+                listFootball.AddRange(yuuyif);
             }
-            var filteredPairs = listFootball.DistinctBy(x => new { x.PairOne, x.PairTwo });
 
+
+            var filteredPairs = listFootball.DistinctBy(x => new { x.PairOne, x.PairTwo });
             _oddsService.AddNewOddsFootball(filteredPairs);
 
             //return listFootball;
             return listFootball.DistinctBy(x => new { x.PairOne, x.PairTwo });
 
 
+
+
+
         }
 
-      
+        //public async Task<IEnumerable<TennisOddDto>> GetTennisOddsFinal2()
+        //{
 
+
+
+        //    List<TennisOddDto> listTennis = new List<TennisOddDto>();
+
+        //    foreach (var item in stringsUrl)
+        //    {
+        //        for (int i = 0; i < 15; i++)
+        //        {
+        //            string z = i.ToString();
+        //            string url = item[1] + "?page=" + z;
+        //            using (HttpClient client = new HttpClient())
+        //            {
+        //                HttpResponseMessage response = await client.GetAsync(url);
+
+        //                if (!response.IsSuccessStatusCode)
+        //                {
+        //                    break;
+        //                }
+
+        //                var ttt = await GetTennisOddsEdit(url, item[0]);
+
+        //                if (ttt.Count() != 0)
+        //                {
+        //                    var yuuyif = ttt.DistinctBy(x => new { x.PairOne, x.PairTwo });
+
+        //                    listTennis.AddRange(yuuyif);
+        //                }
+        //            }
+        //        }
+        //        var filteredPairs = listTennis.DistinctBy(x => new { x.PairOne, x.PairTwo });
+
+        //        _oddsService.AddNewOddsTennis(filteredPairs, item[0]);
+        //    }
+
+        //    return listTennis.DistinctBy(x => new { x.PairOne, x.PairTwo });
+        //}
+
+        //public async Task<List<TennisOddDto>> GetTennisOddsEdit3(string url, string sport)
+        //{
+        //    //var htmlDoc = await GetHtmlDocument(url);
+
+        //    var containers = htmlDoc.DocumentNode.Descendants("div")
+        //        .Where(node => node.GetAttributeValue("class", "")
+        //            .Equals("category-container"))
+        //        .ToList();
+
+        //    List<TennisOddDto> listTennisOdds = new List<TennisOddDto>();
+
+        //    foreach (var section in containers)
+        //    {
+        //        var tableH = section.Descendants("H2").Where(node => node.GetAttributeValue("class", "")
+        //              .Equals("category-label "))
+        //          .FirstOrDefault();
+        //        if (tableH == null)
+        //        {
+        //            tableH = section.Descendants("H1").Where(node => node.GetAttributeValue("class", "")
+        //            .Equals("category-label "))
+        //        .FirstOrDefault(); ;
+        //        }
+        //        var tableSectionTitle = tableH.InnerText;
+
+        //        var resultString = Regex.Replace(tableSectionTitle, @"^((?:\S+\s+){0}\S+).*", "${1}", RegexOptions.Multiline);
+
+        //        if (resultString == "Outright." || resultString == "Outright")
+        //        {
+        //            continue;
+        //        }
+
+
+        //        var oddsPerSection = section.Descendants("tr").Where(node => node.GetAttributeValue("class", "")
+        //                .Equals(" sub-row"));
+
+        //        foreach (var odd in oddsPerSection)
+        //        {
+        //            TennisOddDto tennisOdd = new TennisOddDto
+        //            {
+        //                Tournament = tableSectionTitle
+        //            };
+        //            var giii = odd.Descendants("div")
+        //                .Where(node =>
+        //                    node.GetAttributeValue("class", "").Equals("hint")
+
+        //                    );
+
+        //            if (giii.Count() > 0)
+        //            {
+        //                var match = odd.Descendants("td")
+        //                .Where(node =>
+        //                    node.GetAttributeValue("class", "").Equals("today-name")
+        //                    ||
+        //                    node.GetAttributeValue("class", "").Equals("name")
+        //                    ||
+        //                    node.GetAttributeValue("class", "").Equals("date-with-year-name")
+
+        //                    ).FirstOrDefault();
+
+        //                var dayAndHour = odd.Descendants("td")
+        //                    .Where(node => node.GetAttributeValue("class", "")
+        //                    .Equals("date "))
+        //                    .FirstOrDefault().InnerText.Trim('\n', ' ');
+
+        //                bool isValidData = DateTime.TryParse(dayAndHour, out DateTime data);
+
+        //                if (!isValidData)
+        //                {
+        //                    String inputString = dayAndHour;
+
+        //                    inputString = Regex.Replace(inputString, " \\(.*\\)$", "");
+
+        //                    data = DateTime.ParseExact(inputString, "dd MMM HH:mm",
+        //                        System.Globalization.CultureInfo.InvariantCulture);
+
+        //                }
+
+        //                tennisOdd.BeginingTime = data;
+
+        //                string coefficientFirst = "";
+        //                var cf = odd.Descendants("td")
+        //                    .Where(node => node.GetAttributeValue("class", "")
+        //                    .Equals("price height-column-with-price    first-in-main-row  coupone-width-2"))
+        //                    .FirstOrDefault();
+
+        //                if (cf == null)
+        //                {
+        //                    break;
+        //                }
+        //                else
+        //                {
+        //                    if (cf.InnerText.Trim('\n', ' ').Contains("("))
+        //                    {
+        //                        break;
+        //                    }
+        //                    coefficientFirst = cf.InnerText.Trim('\n', ' ');
+        //                }
+
+
+        //                string coefficientSecond = "";
+        //                var cs = odd.Descendants("td")
+        //                   .Where(node => node.GetAttributeValue("class", "")
+        //                    .Equals("price height-column-with-price    coupone-width-2"))
+        //                    .FirstOrDefault();
+
+        //                if (cs == null)
+        //                {
+        //                    break;
+        //                }
+        //                else
+        //                {
+        //                    if (cs.InnerText.Trim('\n', ' ').Contains("("))
+        //                    {
+        //                        break;
+        //                    }
+        //                    coefficientSecond = cs.InnerText.Trim('\n', ' ');
+
+        //                }
+
+        //                tennisOdd.SportId = sport;
+        //                tennisOdd.CoefficientFirst = coefficientFirst;
+        //                tennisOdd.CoefficientSecond = coefficientSecond;
+        //                tennisOdd.Time = DateTime.Now;
+
+        //                listTennisOdds.Add(tennisOdd);
+        //            }
+        //            else
+        //            {
+        //                var match = odd.Descendants("td")
+        //                .Where(node =>
+        //                    node.GetAttributeValue("class", "").Equals("today-name")
+        //                    ||
+        //                    node.GetAttributeValue("class", "").Equals("name")
+        //                    ||
+        //                    node.GetAttributeValue("class", "").Equals("date-with-year-name")
+
+        //                    );
+
+        //                var dayAndHour = odd.Descendants("td")
+        //                    .Where(node => node.GetAttributeValue("class", "")
+        //                    .Equals("date "))
+        //                    .FirstOrDefault().InnerText.Trim('\n', ' ');
+
+
+        //                bool isValidData = DateTime.TryParse(dayAndHour, out DateTime data);
+
+        //                if (!isValidData)
+        //                {
+        //                    String inputString = dayAndHour;
+
+        //                    inputString = Regex.Replace(inputString, " \\(.*\\)$", "");
+
+        //                    data = DateTime.ParseExact(inputString, "dd MMM HH:mm",
+        //                        System.Globalization.CultureInfo.InvariantCulture);
+
+        //                }
+
+        //                tennisOdd.BeginingTime = data;
+
+        //                var pairOneTitle = match
+        //                    .First()
+        //                    .InnerText.Trim('\n', ' ', '1', '2', '.', ',');
+
+        //                var pairTwoTitle = match
+        //                    .Last()
+        //                    .InnerText.Trim('\n', ' ', '1', '2', '.', ',');
+
+        //                tennisOdd.PairOne = pairOneTitle;
+        //                tennisOdd.PairTwo = pairTwoTitle;
+
+
+        //                string coefficientFirst = "";
+        //                var cf = odd.Descendants("td")
+        //                    .Where(node => node.GetAttributeValue("class", "")
+        //                    .Equals("price height-column-with-price    first-in-main-row  coupone-width-2"))
+        //                    .FirstOrDefault();
+
+        //                if (cf == null)
+        //                {
+        //                    break;
+        //                }
+        //                else
+        //                {
+        //                    if (cf.InnerText.Trim('\n', ' ').Contains("("))
+        //                    {
+        //                        break;
+        //                    }
+        //                    coefficientFirst = cf.InnerText.Trim('\n', ' ');
+        //                }
+
+
+        //                string coefficientSecond = "";
+        //                var cs = odd.Descendants("td")
+        //                   .Where(node => node.GetAttributeValue("class", "")
+        //                    .Equals("price height-column-with-price    coupone-width-2"))
+        //                    .FirstOrDefault();
+
+        //                if (cs == null)
+        //                {
+        //                    break;
+        //                }
+        //                else
+        //                {
+        //                    if (cs.InnerText.Trim('\n', ' ').Contains("("))
+        //                    {
+        //                        break;
+        //                    }
+        //                    coefficientSecond = cs.InnerText.Trim('\n', ' ');
+
+        //                }
+
+        //                tennisOdd.SportId = sport;
+        //                tennisOdd.CoefficientFirst = coefficientFirst;
+        //                tennisOdd.CoefficientSecond = coefficientSecond;
+        //                tennisOdd.Time = DateTime.Now;
+
+        //                listTennisOdds.Add(tennisOdd);
+        //            }
+        //        };
+        //    }
+        //    var cleanedList = listTennisOdds.DistinctBy(x => new { x.PairOne, x.PairTwo, x.SportId });
+
+        //    return listTennisOdds;
+        //}
+
+
+        private string BuildId (string first, string second, DateTime dateTime)
+        {
+            var names = string.Concat(first, second).ToLower().OrderBy(c => c);
+
+            return string.Concat(names, dateTime);
+        }
     }
-       
-    
 }
 
 

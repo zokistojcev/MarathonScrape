@@ -1,11 +1,11 @@
-﻿
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Unity;
-using Unity.Lifetime;
-using System.Data.Entity;
-using System.Threading;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System;
+using System.Threading;
+using ScrapySharp.Network;
+using ScrapySharp.Extensions;
+using System.Net;
 
 namespace OddMarathon.Scraper
 {
@@ -15,6 +15,17 @@ namespace OddMarathon.Scraper
         {
             MainAsync(args).GetAwaiter().GetResult();
         }
+        private static void example3()
+        {
+            var browser = new ScrapingBrowser();
+
+            //set UseDefaultCookiesParser as false if a website returns invalid cookies format
+            //browser.UseDefaultCookiesParser = false;
+            Console.WriteLine("Open website http://www.ishadowsocks.org/");
+            var homePage = browser.NavigateToPage(new Uri("http://www.ishadowsocks.org/"));
+
+           
+        }
 
         static async Task MainAsync(string[] args)
         {
@@ -22,13 +33,12 @@ namespace OddMarathon.Scraper
             DependencyInjection.RegisterDependency(container);
 
             var oddRequests = container.Resolve<OddRequests>();
-
-            await oddRequests.GetFootballOddsFinal();
-            Thread.Sleep(7000);
-
+ 
+            await oddRequests.GetFootballOddsFinal();         
             await oddRequests.GetTennisOddsFinal();
-            Thread.Sleep(7000);
 
+            Thread.Sleep(7000);
+           
         }
         
     }
